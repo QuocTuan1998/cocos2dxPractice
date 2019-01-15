@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>frames</key>
+		<dict>
+			<key>dog1.png</key>
+			<dict>
+				<key>frame</key>
+				<string>{{0,333},{133,64}}</string>
+				<key>offset</key>
+				<string>{0,0}</string>
+				<key>rotated</key>
+				<false/>
+				<key>sourceColorRect</key>
+				<string>{{2,8},{133,64}}</string>
+				<key>sourceSize</key>
+				<string>{145,72}</string>
+			</dict>
+
+			<key>dog2.png</key>
+			<dict>
+				<key>frame</key>
+				<string>{{0,398},{129,55}}</string>
+				<key>offset</key>
+				<string>{0,0}</string>
+				<key>rotated</key>
+				<false/>
+				<key>sourceColorRect</key>
+				<string>{{5,11},{129,55}}</string>
+				<key>sourceSize</key>
+				<string>{145,72}</string>
+			</dict>
+
+			<key>dog3.png</key>
+			<dict>
+				<key>frame</key>
+				<string>{{0,196},{136,64}}</string>
+				<key>offset</key>
+				<string>{0,0}</string>
+				<key>rotated</key>
+				<false/>
+				<key>sourceColorRect</key>
+				<string>{{1,8},{136,64}}</string>
+				<key>sourceSize</key>
+				<string>{145,72}</string>
+			</dict>
+
+			<key>dog4.png</key>
+			<dict>
+				<key>frame</key>
+				<string>{{0,129},{138,66}}</string>
+				<key>offset</key>
+				<string>{0,0}</string>
+				<key>rotated</key>
+				<false/>
+				<key>sourceColorRect</key>
+				<string>{{1,6},{138,66}}</string>
+				<key>sourceSize</key>
+				<string>{145,72}</string>
+			</dict>
+
+			<key>dog5.png</key>
+			<dict>
+				<key>frame</key>
+				<string>{{0,66},{141,62}}</string>
+				<key>offset</key>
+				<string>{0,0}</string>
+				<key>rotated</key>
+				<false/>
+				<key>sourceColorRect</key>
+				<string>{{0,9},{141,62}}</string>
+				<key>sourceSize</key>
+				<string>{145,72}</string>
+			</dict>
+
+			<key>dog6.png</key>
+			<dict>
+				<key>frame</key>
+				<string>{{0,0},{143,65}}</string>
+				<key>offset</key>
+				<string>{0,0}</string>
+				<key>rotated</key>
+				<false/>
+				<key>sourceColorRect</key>
+				<string>{{2,6},{143,65}}</string>
+				<key>sourceSize</key>
+				<string>{145,72}</string>
+			</dict>
+
+			<key>dog7.png</key>
+			<dict>
+				<key>frame</key>
+				<string>{{0,261},{134,71}}</string>
+				<key>offset</key>
+				<string>{0,0}</string>
+				<key>rotated</key>
+				<false/>
+				<key>sourceColorRect</key>
+				<string>{{8,0},{134,71}}</string>
+				<key>sourceSize</key>
+				<string>{145,72}</string>
+			</dict>
+
+		</dict>
+
+		<key>metadata</key>
+		<dict>
+			<key>format</key>
+			<integer>2</integer>
+			<key>size</key>
+			<string>{256,512}</string>
+			<key>textureFileName</key>
+			<string>dogsprite.png</string>
+			</dict>
+		</dict>
+</plist>
