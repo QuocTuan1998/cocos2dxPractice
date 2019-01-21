@@ -30,14 +30,9 @@ bool MenuScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-	auto bgSprite = Sprite::create(__BG_URL__);
+	auto bgSprite = Sprite::create(IMAGE_BACKGROUND_DEFAULT);
 	bgSprite->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2));
 	this->addChild(bgSprite);
-	
-	auto label = MenuItemFont::create("SPACE GAME");
-	label->setPosition(Vec2(visibleSize.width / 2, visibleSize.height - __PADDING_MENU_ITEM__));
-	label->setFontSize(30);
-	label->setColor(Color3B::RED);
 
 	auto playItem = MenuItemImage::create("ui/button_play.png", "ui/button_play.png"
 		,CC_CALLBACK_1(MenuScene::goToGamePlayScene, this)
@@ -48,9 +43,9 @@ bool MenuScene::init()
 		[](Ref *sender) {
 		exit(0);
 	});
-	exitItem->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2 - __PADDING_MENU_ITEM__ ));
+	exitItem->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2 - PADDING_MENU_ITEM ));
 
-	auto menu = Menu::create(label, playItem, exitItem, NULL);
+	auto menu = Menu::create(playItem, exitItem, NULL);
 	menu->setPosition(Vec2(0, 0));
 
 	this->addChild(menu);
@@ -61,6 +56,6 @@ bool MenuScene::init()
 void MenuScene::goToGamePlayScene(cocos2d::Ref *sender)
 {
 	auto scene = GamePlay::create();
-	Director::getInstance()->replaceScene(TransitionFade::create(__TRASITION_TIME__, scene));
+	Director::getInstance()->replaceScene(TransitionFade::create(TIME_TRASITION, scene));
 }
 

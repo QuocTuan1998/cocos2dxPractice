@@ -6,44 +6,57 @@
 #include "ModelObject.h"
 #include "Bullet.h"
 #include "Meteor.h"
-using namespace cocos2d;
+#include "Enemy.h"
 
 class Ship : public ModelObject
 {
 private:
-	Scene *mLayer;
+	cocos2d::Scene *mScene;
 	int mCountBullet = 0;
-	EventListenerTouchOneByOne *mTouch;
+	int mHealth;
+	cocos2d::EventListenerTouchOneByOne *mTouch;
 	std::vector<Bullet*> mListBullet;
-	Vec2 mOldTouchLocation;
+	cocos2d::Vec2 mOldTouchLocation;
+	cocos2d::Sprite *mBGAttacked;
 	int mScore;
 public:
 	Ship();
 
-	Ship(Scene * scene);
+	Ship(cocos2d::Scene * scene);
 	
-	void initEvent(Scene *scene);
+	void InitEvent(cocos2d::Scene *scene);
 	
-	void generateBullet();
+	void GenerateBullet();
 
 	void Init() override;
 
 	void Update() override;
 
-	void shoot();
+	void Shoot();
 	
-	void Shipdamaged();
+	void ShipAttacked();
 
-	void HandleCollision(std::vector<Meteor*> meteors);
+	cocos2d::Vector<cocos2d::SpriteFrame*> GetAnimFrames(const char *format, int count);
+
+	void HandleCollisionWithMeteor(std::vector<Meteor*> meteors);
+
+	void HandleCollisionWithEnemy(std::vector<Enemy*> enemies);
+
+	void HandleCollisionWithBulletEnemy(std::vector<Bullet*> bullets);
+
+	void EnemyExplosion(cocos2d::Vec2 pos);
 
 	int GetScore();
-	void SetScore(int score);
 
-	bool onTouchBegan(Touch * touch, Event * event);
+	int GetHealth();
 
-	void onTouchMoved(Touch * touch, Event * event);
+	void GameOver();
 
-	void onTouchEnded(Touch * touch, Event * event);
+	bool onTouchBegan(cocos2d::Touch * touch, cocos2d::Event * event);
+
+	void onTouchMoved(cocos2d::Touch * touch, cocos2d::Event * event);
+
+	void onTouchEnded(cocos2d::Touch * touch, cocos2d::Event * event);
 	
 };
 

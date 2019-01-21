@@ -1,9 +1,7 @@
-
 #include "SimpleAudioEngine.h"
 #include "Definition.h"
 #include "ModelObject.h"
 USING_NS_CC;
-using namespace cocos2d;
 
 ModelObject::ModelObject()
 {

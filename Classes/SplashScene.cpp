@@ -31,11 +31,11 @@ bool SplashScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-	auto bgSprite = Sprite::create(__BG_URL__);
+	auto bgSprite = Sprite::create(IMAGE_BACKGROUND_DEFAULT);
 	bgSprite->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2));
 	this->addChild(bgSprite);
    
-	this->scheduleOnce(schedule_selector(SplashScene::goToMenuScene), __TIME_SLASH__);
+	this->scheduleOnce(schedule_selector(SplashScene::goToMenuScene), TIME_SPLASH);
 
     return true;
 }
@@ -43,6 +43,6 @@ bool SplashScene::init()
 void SplashScene::goToMenuScene(float dt)
 {
 	auto scene = MenuScene::create();
-	Director::getInstance()->replaceScene(TransitionFade::create(__TRASITION_TIME__, scene));
+	Director::getInstance()->replaceScene(TransitionFade::create(TIME_TRASITION, scene));
 }
 

@@ -6,7 +6,7 @@
 USING_NS_CC;
 
 using namespace cocos2d;
-using namespace std;
+
 Ship::Ship()
 {
 
@@ -14,45 +14,53 @@ Ship::Ship()
 
 Ship::Ship(Scene *scene)
 {
-	mSprite = Sprite::create(__IMAGE_SPACE_SHIP__);
-	mSprite->setPosition(Vec2(__WIDTH_SIZE__ / 2, __PADDING_MENU_ITEM__));
+	mSprite = Sprite::create(IMAGE_SPACE_SHIP);
 	this->SetAlive(true);
+	mSprite->setPositionX(WIDTH_SIZE / 2);
 	mScore = 0;
-	this->mLayer = scene;
-	scene->addChild(mSprite);
-	this->generateBullet();
-	initEvent(scene);
+	mHealth = HEALTH_PLAYER_SHIP;
+	this->mScene = scene;
+	scene->addChild(mSprite, 1);
+	this->GenerateBullet();
+	InitEvent(scene);
 }
 
-void Ship::generateBullet()
+void Ship::GenerateBullet()
 {
-	for (int i = 0; i < __NUM_OF_BULLET__; i++)
+	for (int i = 0; i < NUM_OF_BULLET_SHIP; i++)
 	{
-		Bullet *bullet = new Bullet(mLayer);
+		Bullet *bullet = new Bullet(mScene, BULLET_SHIP);
 		mListBullet.push_back(bullet);
 	}
 }
 
 void Ship::Init()
 {
+	auto moveTo = MoveTo::create(PLAYER_SHIP_DURATION, 
+		Vec2(WIDTH_SIZE / 2, HEIGHT_SIZE / 3));
+	mSprite->runAction(moveTo);
 
+	mBGAttacked = Sprite::create(IMAGE_BACKGROUND_ATTACKED);
+	mBGAttacked->setAnchorPoint(Vec2(0, 0));
+	mScene->addChild(mBGAttacked);
+	mBGAttacked->setVisible(false);
 }
 
 void Ship::Update()
 {
-	shoot();
-	
+	Shoot();
 	for (int i = 0; i < mListBullet.size(); i++)
 	{
 		mListBullet.at(i)->Update();
 	}
-	
+
+	GameOver();
 }
 
-void Ship::shoot()
+void Ship::Shoot()
 {
 	mCountBullet++;
-	if (mCountBullet % __NUM_OF_BULLET_FRAME__ == 0)
+	if (mCountBullet % NUM_OF_BULLET_FRAME_SHIP == 0)
 	{
 		for (int i = 0; i < mListBullet.size(); i++)
 		{
@@ -66,26 +74,41 @@ void Ship::shoot()
 	}
 }
 
-void Ship::Shipdamaged()
+void Ship::ShipAttacked()
 {
-	auto callbackShipDamaged = CallFunc::create([=]() {
-		mSprite->setTexture(__IMAGE_SPACE_SHIP_DAMAGED__);
+	auto callbackAttacked = CallFunc::create([=]() {
+		mBGAttacked->setVisible(true);
 	});
-	auto callbackShipNormal = CallFunc::create([=]() {
-		mSprite->setTexture(__IMAGE_SPACE_SHIP__);
+	
+	auto callbackRemove = CallFunc::create([=]() {
+		mBGAttacked->setVisible(false);
 	});
 
-	auto damgedTime = DelayTime::create(__TIME_DELAY_SHIP_DAMAGED__);
-	auto seqDamaged = Sequence::create(callbackShipDamaged, damgedTime, callbackShipNormal,nullptr);
+	auto attackedTime = DelayTime::create(TIME_DELAY_SHIP_ATTACKED);
+	auto seqDamaged = Sequence::create(callbackAttacked, attackedTime, callbackRemove, nullptr);
 	mSprite->runAction(seqDamaged);
+	mHealth--;
 }
 
-void Ship::HandleCollision(vector<Meteor*> meteors)
+cocos2d::Vector<cocos2d::SpriteFrame*> Ship::GetAnimFrames(const char * format, int count)
 {
-	/*	Collision bullet---meteor	*/
-	for (int i = 0; i < __NUM_OF_BULLET__; i++)
+	auto spritecache = SpriteFrameCache::getInstance();
+	cocos2d::Vector<SpriteFrame*> animFrames;
+	char str[100];
+	for (int i = 1; i <= count; i++)
 	{
-		for (int j = 0; j < __NUM_OF_METEOR__; j++)
+		sprintf(str, format, i);
+		animFrames.pushBack(spritecache->getSpriteFrameByName(str));
+	}
+	return animFrames;
+}
+
+void Ship::HandleCollisionWithMeteor(std::vector<Meteor*> meteors)
+{
+	/*	Collision bullet ship --- meteor	*/
+	for (int i = 0; i < NUM_OF_BULLET_SHIP; i++)
+	{
+		for (int j = 0; j < NUM_OF_METEOR; j++)
 		{
 			Bullet *bullet = mListBullet.at(i);
 			Meteor *meteor = meteors.at(j);
@@ -95,31 +118,105 @@ void Ship::HandleCollision(vector<Meteor*> meteors)
 				{
 					bullet->SetAlive(false);
 					meteor->SetAlive(false);
-					SetScore(GetScore() + 1);
-					//log("score : %d", GetScore());
 				}
 			}
 		}
 	}
 
 	/*	Collision ship---meteor	*/
-	for (int i = 0; i < __NUM_OF_METEOR__; i++)
+	for (int i = 0; i < NUM_OF_METEOR; i++)
 	{
 		Meteor *meteor = meteors.at(i);
 		if (meteor->IsAlive() && IsAlive())
 		{
 			if (meteor->GetBoundingBox().intersectsRect(mSprite->getBoundingBox()))
 			{
-				Shipdamaged();
-				SetScore(GetScore() - 1);
+				ShipAttacked();
 				meteor->SetAlive(false);
-				if (GetScore() <= 0)
+			}
+		}
+	}
+}
+
+void Ship::HandleCollisionWithEnemy(std::vector<Enemy*> enemies)
+{
+	/*	bullet ship		----	enemy*/
+	for (int i = 0; i < NUM_OF_BULLET_SHIP; i++)
+	{
+		for (int j = 0; j < NUM_OF_ENEMY; j++)
+		{
+			Bullet *bullet = mListBullet.at(i);
+			Enemy *enemy = enemies.at(j);
+			if (enemy->IsAlive() && bullet->IsAlive())
+			{
+				if (bullet->GetBoundingBox().intersectsRect(enemy->GetBoundingBox()))
 				{
-					SetScore(0);
+					bullet->SetAlive(false);
+					enemy->ReduceHealth();
+
+					if (enemy->GetHealth() <= 0)
+					{
+						enemy->SetAlive(false);
+						EnemyExplosion(enemy->GetPosition());
+					}
+					
+					mScore++;
 				}
 			}
 		}
 	}
+	/*	player ship		----	enemy ship*/
+	for (int j = 0; j < NUM_OF_ENEMY; j++)
+	{
+		Enemy *enemy = enemies.at(j);
+		if (enemy->IsAlive() && IsAlive())
+		{
+			if (enemy->GetBoundingBox().intersectsRect(mSprite->getBoundingBox()))
+			{
+				ShipAttacked();
+				enemy->SetAlive(false);
+				EnemyExplosion(enemy->GetPosition());
+				mHealth -= enemy->GetHealth();
+			}
+		}
+	}
+}
+
+void Ship::HandleCollisionWithBulletEnemy(std::vector<Bullet*> bullets)
+{
+	/*	bullet enemy ----	ship*/
+	for (int j = 0; j < NUM_OF_BULLET_ENEMY; j++)
+	{
+		Bullet *bullet = bullets.at(j);
+		if (IsAlive() && bullet->IsAlive())
+		{
+			if (bullet->GetBoundingBox().intersectsRect(mSprite->getBoundingBox()))
+			{
+				ShipAttacked();
+				bullet->SetAlive(false);
+				mHealth--;
+				mScore--;
+			}
+		}
+	}
+}
+
+void Ship::EnemyExplosion(cocos2d::Vec2 pos)
+{
+	SpriteFrameCache::getInstance()->addSpriteFramesWithFile(ENEMY_EXPLOSION_PLIST);
+	cocos2d::Vector<SpriteFrame*> frames = GetAnimFrames("explosion(%d).png", NUM_OF_ANIMATION_FRAME_ENEMY);
+	auto sprite = Sprite::createWithSpriteFrame(frames.front());
+	mScene->addChild(sprite);
+	sprite->setPosition(pos);
+	
+	auto callbackRemoveSprite = CallFunc::create([=]() {
+		sprite->setVisible(false);
+		mScene->removeChild(sprite);
+	});
+	
+	auto animation = Animation::createWithSpriteFrames(frames, 1.0f / 8);
+	auto seqRemove = Sequence::create(Animate::create(animation), callbackRemoveSprite, nullptr);
+	sprite->runAction(seqRemove);
 }
 
 int Ship::GetScore()
@@ -127,12 +224,40 @@ int Ship::GetScore()
 	return mScore;
 }
 
-void Ship::SetScore(int score)
+int Ship::GetHealth()
 {
-	mScore = score;
+	return mHealth;
 }
 
-void Ship::initEvent(Scene *layer)
+void Ship::GameOver()
+{
+	if (mHealth <= 0)
+	{
+		SetAlive(false);
+
+		for (int i = 0; i < mListBullet.size(); i++)
+		{
+			if (mListBullet.at(i)->IsAlive())
+			{
+				mListBullet.at(i)->SetAlive(false);
+			}
+		}
+
+		auto callbackExplosion = CallFunc::create([=]() {
+			EnemyExplosion(GetPosition());
+		});
+
+		auto callbackGameOver = CallFunc::create([=]() {
+			auto scene = GameOver::create();
+			Director::getInstance()->replaceScene(TransitionFade::create(TIME_TRASITION, scene));
+		});
+
+		auto seq = Sequence::create(callbackExplosion, DelayTime::create(TIME_SPLASH), callbackGameOver, nullptr);
+		mScene->runAction(seq);
+	}
+}
+
+void Ship::InitEvent(Scene *layer)
 {
 	mTouch = EventListenerTouchOneByOne::create();
 	mTouch->setSwallowTouches(true);
@@ -154,7 +279,7 @@ bool Ship::onTouchBegan(Touch * touch, Event * event)
 	if (rect.containsPoint(touchLocation))
 	{
 		mOldTouchLocation = touchLocation;
-		mSprite->setTexture(__IMAGE_SPACE_SHIP__);
+		mSprite->setTexture(IMAGE_SPACE_SHIP);
 		return true;
 	}
 
@@ -165,24 +290,21 @@ void Ship::onTouchMoved(Touch * touch, Event * event)
 {
 	Vec2 newtouchLocation = touch->getLocation();
 	Vec2 shipLocation = mSprite->getPosition();
-
 	float posX = shipLocation.x - (mOldTouchLocation.x - newtouchLocation.x);
 	float posY = shipLocation.y - (mOldTouchLocation.y - newtouchLocation.y);
-	mSprite->setPosition(posX, posY);
-	if (shipLocation.x > posX)
+
+	if (posX >= mSprite->getContentSize().width / 4 && posX <= WIDTH_SIZE - mSprite->getContentSize().width / 4 && 
+		posY >= mSprite->getContentSize().width / 3 && posY <= HEIGHT_SIZE - mSprite->getContentSize().width / 3)
 	{
-		mSprite->setTexture(__IMAGE_SPACE_SHIP_LEFT__);
+		
+		mSprite->setPosition(posX, posY);
 	}
-	else if(shipLocation.x < posX)
-	{
-		mSprite->setTexture(__IMAGE_SPACE_SHIP_RIGHT__);
-	}
-	
+
 	mOldTouchLocation = newtouchLocation;
 }
 
 void Ship::onTouchEnded(Touch * touch, Event * event)
 {
-	mSprite->setTexture(__IMAGE_SPACE_SHIP__);
+	mSprite->setTexture(IMAGE_SPACE_SHIP);
 }
 

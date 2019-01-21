@@ -1,15 +1,10 @@
 
 #include "GamePlayScene.h"
 #include "SimpleAudioEngine.h"
-#include "Definition.h"
-#include "Ship.h"
-#include "Meteor.h"
-#include "Bullet.h"
-#include "ModelObject.h"
+#include "ui/CocosGUI.h"
 USING_NS_CC;
 
 using namespace std;
-
 Scene* GamePlay::createScene()
 {
     return GamePlay::create();
@@ -21,8 +16,6 @@ static void problemLoading(const char* filename)
     printf("Error while loading: %s\n", filename);
     printf("Depending on how you compiled you might have to add 'Resources/' in front of filenames in HelloWorldScene.cpp\n");
 }
-Bullet *bullet;
-
 // on "init" you need to initialize your instance
 bool GamePlay::init()
 {
@@ -36,78 +29,95 @@ bool GamePlay::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-	auto bgSprite = Sprite::create(__BG_URL__);
-	bgSprite->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2));
-	this->addChild(bgSprite);
+	auto background = Sprite::create(IMAGE_BACKGROUND_GAME_PLAY);
+	background->setAnchorPoint(Vec2(0, 0));
+	this->addChild(background);
+
+	mBackground = new Background(this);
+	mBackground->Init();
+	
+	mHealthBar = ui::LoadingBar::create(IMAGE_HEALTH_BAR);
+	mHealthBar->setPercent(HEALTH_PLAYER_SHIP);
+	mHealthBar->setDirection(ui::LoadingBar::Direction::LEFT);
+	mHealthBar->setPosition(Vec2(visibleSize.width / 2, 50));
+	addChild(mHealthBar, 2);
 
 	mShip = new Ship(this);
+	mShip->Init();
 
 	mScoreLable = Label::createWithTTF(to_string(mShip->GetScore()), "fonts/Marker Felt.ttf", 40);
-	mScoreLable->setPosition(Vec2(__WIDTH_SIZE__ / 2, __HEIGHT__SIZE__ / 1.3));
+	mScoreLable->setPosition(Vec2(WIDTH_SIZE / 2, HEIGHT_SIZE / 1.3));
 	this->addChild(mScoreLable);
 
 	this->GenerateMeteor();
-	
-	this->scheduleUpdate();
+	this->GenerateEnemy();
 
+	this->scheduleUpdate();
+	
     return true;
 }
 
 void GamePlay::GenerateMeteor()
 {
-	for (int i = 0; i < __NUM_OF_METEOR__; i++)
+	for (int i = 0; i < NUM_OF_METEOR; i++)
 	{
 		Meteor *met = new Meteor(this);
 		mListMeteor.push_back(met);
 	}
 }
 
-void GamePlay::InitValue()
+void GamePlay::GenerateEnemy()
 {
-	/*mPosX = this->randomValueBetween(30,
-		__WIDTH_SIZE__ - mListMeteor[mCountMetoer]->getSpriteSize().width);
-
-	mPosY = __HEIGHT__SIZE__ + mListMeteor[mCountMetoer]->getSpriteSize().height;
-	mSpeed = this->randomValueBetween(2, 7);
-	mRotateDuration = this->randomValueBetween(0.5, 2);
-	mAngle = this->randomValueBetween(30, 180);
-	mScale = this->randomValueBetween(0.4, 1.2);*/
-}
-
-float GamePlay::RandomValueBetween(float low, float hight)
-{
-	return RandomHelper::random_real(low, hight);
-}
-
-float GamePlay::GetTime()
-{
-	timeval time;
-	gettimeofday(&time, NULL);
-	long milles = (time.tv_sec * 1000) + (time.tv_usec / 1000);
-	
-	return (float)milles;
+	for (int i = 0; i < NUM_OF_ENEMY; i++)
+	{
+		Enemy *enemy = new Enemy(this);
+		mListEnemy.push_back(enemy);
+	}
 }
 
 void GamePlay::update(float)
-{	
+{
+
+	mBackground->Update();
 	mScoreLable->setString(to_string(mShip->GetScore()));
+	mHealthBar->setPercent(mShip->GetHealth());
 
 	mShip->Update();
-
 	MeteorFall();
+	EnemyFall();
 
+	/* update position meteor*/
 	for (int i = 0; i < mListMeteor.size(); i++)
 	{
 		mListMeteor.at(i)->Update();
 	}
+	
+	/*update position enemy*/
+	for (int i = 0; i < mListEnemy.size(); i++)
+	{
+		mListEnemy.at(i)->Update();
+	}
 
-	mShip->HandleCollision(mListMeteor);
+	/*collision*/
+	mShip->HandleCollisionWithMeteor(mListMeteor);
+	mShip->HandleCollisionWithEnemy(mListEnemy);
+	
+	for (int i = 0; i < mListEnemy.size(); i++)
+	{
+		mShip->HandleCollisionWithBulletEnemy(mListEnemy.at(i)->getBulletEnemy());
+	}
+	
+	if (mShip->GetHealth() <= 0)
+	{
+		mHealthBar->setPercent(0);
+	}
+	
 }
 
 void GamePlay::MeteorFall()
 {
 	mCountMetoer++;
-	if (mCountMetoer % __NUM_OF_METEOR_FRAME__ == 0)
+	if (mCountMetoer % NUM_OF_METEOR_FRAME == 0)
 	{
 		for (int i = 0; i < mListMeteor.size(); i++)
 		{
@@ -120,3 +130,18 @@ void GamePlay::MeteorFall()
 	}
 }
 
+void GamePlay::EnemyFall()
+{
+	mCountEnemy++;
+	if (mCountMetoer % NUM_OF_ENEMY_FRAME == 0)
+	{
+		for (int i = 0; i < mListEnemy.size(); i++)
+		{
+			if (!mListEnemy.at(i)->IsAlive())
+			{
+				mListEnemy.at(i)->Init();
+				break;
+			}
+		}
+	}
+}

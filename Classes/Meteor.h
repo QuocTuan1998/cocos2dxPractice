@@ -4,6 +4,8 @@
 
 #include "ModelObject.h"
 #include "cocos2d.h"
+#include "Definition.h"
+#include "ModelObject.h"
 
 class Meteor : public ModelObject
 {
