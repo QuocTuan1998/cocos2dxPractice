@@ -7,6 +7,7 @@ class Land : public ModelObject
 {
 private:
 	bool mIsCollision;
+	int mCountLand;
 public:
 	Land();
 	Land(cocos2d::Scene *scene);

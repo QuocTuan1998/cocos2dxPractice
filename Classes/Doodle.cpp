@@ -107,7 +107,7 @@ bool Doodle::onContactBegin(cocos2d::PhysicsContact & contact)
 		a->getCollisionBitmask() == 2 && b->getCollisionBitmask() == 1
 		)
 	{
-		mCurrentPosition.y = b->getPosition().y + DOO_SPEED_Y;
+		mCurrentPosition.y = b->getPosition().y;
 		mBody->setVelocity(Vec2(0, DOO_SPEED_Y));
 		return false;
 	}

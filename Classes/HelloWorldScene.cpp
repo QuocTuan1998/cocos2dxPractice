@@ -65,6 +65,7 @@ bool HelloWorld::init()
 	mDoodle->Init();
 	this->GenarateLand();
 	mMaxY = mListLand.at(0)->GetPosition().y;
+	mMinY = mListLand.at(0)->GetPosition().y;
 	this->scheduleUpdate();
 	//mBackGround->runAction(MoveTo::create(1, Vec2(0, 200)));
 	return true;
@@ -78,26 +79,42 @@ void HelloWorld::GenarateLand()
 		land->Init();
 		mListLand.push_back(land);
 	}
-
-	for (int i = 0; i <= mListLand.size(); i++)
-	{
-		Land *land = new Land(this);
-		if (land->GetPosition().y > mMaxY)
-		{
-			mMaxY = land->GetPosition().y;
-			log("%f", mMaxY);
-		}
-	}
 }
 
 void HelloWorld::update(float dt)
 {
 	mDoodle->Update();
 	
-	
-	if (mDoodle->GetPosition().y > mMaxY + DOO_SPEED_Y / 2)
+	//float centerPos = (mMaxY + mMinY) / 2;
+	//if (mDoodle->GetPosition().y >= HEIGHT_SIZE / 2)
+	//{
+		//log(" pos land %f ", mListLand.at(1));
+		//log("pos scene %f ", Director::getInstance()->getRunningScene()->getPositionY());
+		Director::getInstance()->getRunningScene()->setPositionY(Director::getInstance()->getRunningScene()->getPositionY() - SCENE_SPEED);
+		mBackGround->setPositionY(mBackGround->getPositionY() + BACKGROUND_SPEED);
+		log("bg pos Y : %f", mBackGround->getPositionY());
+		for (int i = 0; i < mListLand.size(); i++)
+		{
+			Land *land = mListLand.at(i);
+			if (mBackGround->getPositionY() > land->GetPosition().y)
+			{
+				land->setAlive(false);
+			}
+		}
+	//}
+	SpawnLand();
+}
+
+void HelloWorld::SpawnLand()
+{
+	for (int i = 0; i < mListLand.size(); i++)
 	{
-		//Director::getInstance()->getRunningScene()->runAction(MoveTo::create(3, Vec2(0, -mMaxY)));
-		Director::getInstance()->getRunningScene()->setPositionY(-mMaxY);
+		Land *land = mListLand.at(i);
+		if (!land->IsAlive())
+		{
+			land->Init();
+			break;
+		}
 	}
 }
+	

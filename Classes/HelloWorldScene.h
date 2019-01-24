@@ -10,6 +10,8 @@ class HelloWorld : public cocos2d::Scene
 private:
 	cocos2d::Sprite * mBackGround;
 	float mMaxY;
+	float mMinY;
+	float mCenterPos;
 	cocos2d::Camera *mCamera;
 	Doodle *mDoodle;
 	std::vector<Land*> mListLand;
@@ -23,6 +25,8 @@ public:
 	void GenarateLand();
 
 	void update(float dt);
+
+	void SpawnLand();
     
 	void setViewPointCenter(cocos2d::Vec2 position);
 	

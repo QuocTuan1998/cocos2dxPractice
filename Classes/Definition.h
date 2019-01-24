@@ -11,3 +11,7 @@
 #define DOO_SPEED_Y 300
 
 #define NUM_OF_LAND 15
+#define LAND_GAP 200
+
+#define BACKGROUND_SPEED 1.5
+#define SCENE_SPEED 1.5
